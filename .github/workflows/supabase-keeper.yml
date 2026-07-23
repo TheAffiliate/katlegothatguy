@@ -1,0 +1,35 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every 4 days
+    - cron: '0 0 */4 * *'
+  # Allows manual triggering from the Actions tab in GitHub
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          echo "Sending keep-alive request to Supabase..."
+          
+          # Hits your public REST endpoint to trigger database activity
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "${SUPABASE_URL}/rest/v1/projects?select=*&limit=1")
+            
+          echo "Supabase responded with HTTP status: $RESPONSE"
+          
+          if [ "$RESPONSE" -ge 200 ] && [ "$RESPONSE" -lt 400 ]; then
+            echo "Successfully pinged Supabase!"
+            exit 0
+          else
+            echo "Failed to reach Supabase. HTTP Status: $RESPONSE"
+            exit 1
+          fi
