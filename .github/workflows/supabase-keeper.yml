@@ -7,10 +7,16 @@ on:
   # Allows manual triggering from the Actions tab in GitHub
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   ping-supabase:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Ping Supabase Database
         env:
           SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -28,8 +34,10 @@ jobs:
           
           if [ "$RESPONSE" -ge 200 ] && [ "$RESPONSE" -lt 400 ]; then
             echo "Successfully pinged Supabase!"
-            exit 0
           else
             echo "Failed to reach Supabase. HTTP Status: $RESPONSE"
             exit 1
           fi
+
+      - name: Prevent 60-Day Workflow Inactivity Pause
+        uses: gautamkrishnar/keepalive-workflow@v1
