@@ -32,57 +32,6 @@ interface SkillsSectionProps {
   skills?: DBSkillCategory[];
 }
 
-const defaultSkillCategories: UISkillCategory[] = [
-  {
-    title: 'Frontend',
-    icon: Code2,
-    color: '#00F5D4',
-    skills: [
-      { name: 'React / Next.js', level: 90 },
-      { name: 'JavaScript / TypeScript', level: 88 },
-      { name: 'HTML / CSS', level: 92 },
-      { name: 'Tailwind CSS', level: 85 },
-    ],
-  },
-  {
-    title: 'Backend',
-    icon: Terminal,
-    color: '#00D9B5',
-    skills: [
-      { name: 'Node.js', level: 82 },
-      { name: 'RESTful APIs', level: 85 },
-      { name: 'C#', level: 78 },
-      { name: 'SQL', level: 88 },
-    ],
-  },
-  {
-    title: 'Mobile & Database',
-    icon: Database,
-    color: '#00BFA5',
-    skills: [
-      { name: 'Kotlin (Android)', level: 80 },
-      { name: 'Java', level: 82 },
-      { name: 'Firebase', level: 85 },
-      { name: 'Appwrite', level: 88 },
-    ],
-  },
-  {
-    title: 'Tools & Platforms',
-    icon: Cloud,
-    color: '#00A896',
-    skills: [
-      { name: 'Git / GitHub', level: 90 },
-      { name: 'Azure DevOps', level: 80 },
-      { name: 'Agile Collaboration', level: 85 },
-      { name: 'Version Control', level: 88 },
-    ],
-  },
-];
-
-const defaultToolsList = defaultSkillCategories.flatMap((cat) =>
-  cat.skills.map((s) => s.name)
-);
-
 function SkillCard({ category, index, isInView }: SkillCardProps) {
   const Icon = category.icon;
 
@@ -142,31 +91,31 @@ function SkillCard({ category, index, isInView }: SkillCardProps) {
   );
 }
 
-export default function SkillsSection({ skills }: SkillsSectionProps) {
+export default function SkillsSection({ skills = [] }: SkillsSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
-  // Map database properties to the UI format (assigning visual colors/icons)
-  let displayCategories = defaultSkillCategories;
-  let tools = defaultToolsList;
-
-  if (skills && skills.length > 0) {
-    const icons = [Code2, Terminal, Database, Cloud, Layers];
-    const colors = ['#00F5D4', '#00D9B5', '#00BFA5', '#00A896', '#02C39A'];
-
-    displayCategories = skills.map((dbCat, index) => ({
-      title: dbCat.category,
-      icon: icons[index % icons.length],
-      color: colors[index % colors.length],
-      skills: dbCat.items.map((item) => ({
-        name: item,
-        // Generates a deterministic percentage between 80 and 95 based on string length
-        level: 80 + (item.length % 16),
-      })),
-    }));
-
-    tools = skills.flatMap((cat) => cat.items);
+  // Hide section if no skills in database
+  if (!skills || skills.length === 0) {
+    return null;
   }
+
+  // Map database properties to the UI format (assigning visual colors/icons)
+  const icons = [Code2, Terminal, Database, Cloud, Layers];
+  const colors = ['#00F5D4', '#00D9B5', '#00BFA5', '#00A896', '#02C39A'];
+
+  const displayCategories: UISkillCategory[] = skills.map((dbCat, index) => ({
+    title: dbCat.category,
+    icon: icons[index % icons.length],
+    color: colors[index % colors.length],
+    skills: dbCat.items.map((item) => ({
+      name: item,
+      // Generates a deterministic percentage between 80 and 95 based on string length
+      level: 80 + (item.length % 16),
+    })),
+  }));
+
+  const tools = skills.flatMap((cat) => cat.items);
 
   return (
     <section id="skills" className="py-32 px-6 relative">

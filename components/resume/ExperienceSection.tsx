@@ -26,41 +26,6 @@ interface ExperienceSectionProps {
   experiences?: Experience[];
 }
 
-const defaultExperiences: Experience[] = [
-  {
-    title: 'Intermediate Software Developer',
-    company: 'Futures Tech Group',
-    location: 'Johannesburg, South Africa',
-    period: 'April 2022 - January 2024',
-    description:
-      'Designed and implemented responsive web and mobile applications, collaborating with cross-functional teams to deliver high-quality digital solutions.',
-    achievements: [
-      'Improved client engagement by 25% through React and Next.js applications',
-      'Developed RESTful APIs and integrated Appwrite and Firebase backends',
-      'Managed multiple client projects using Git and Azure DevOps',
-      'Collaborated with marketing teams on digital assets and branding',
-    ],
-    technologies: ['React', 'Next.js', 'Firebase', 'Appwrite', 'Azure DevOps'],
-    current: false,
-  },
-  {
-    title: 'Graphic Designer',
-    company: 'Freelance & Consultation',
-    location: 'Johannesburg, South Africa',
-    period: 'January 2020 - March 2022',
-    description:
-      'Created web and mobile app designs focusing on user experience and engagement. Led client projects from concept to completion.',
-    achievements: [
-      'Increased user engagement by 20% through improved UX designs',
-      'Led website redesign resulting in 30% boost in web traffic',
-      'Conducted client presentations and refined designs based on feedback',
-      'Developed branding materials for multiple clients',
-    ],
-    technologies: ['Figma', 'UI/UX Design', 'Web Design', 'Mobile Design'],
-    current: false,
-  },
-];
-
 function TimelineItem({ experience, index, isInView }: TimelineItemProps) {
   return (
     <motion.div
@@ -148,12 +113,14 @@ function TimelineItem({ experience, index, isInView }: TimelineItemProps) {
   );
 }
 
-export default function ExperienceSection({ experiences }: ExperienceSectionProps) {
+export default function ExperienceSection({ experiences = [] }: ExperienceSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  
-  // Use Supabase data if it exists and has items, otherwise use fallback data
-  const displayExperiences = experiences && experiences.length > 0 ? experiences : defaultExperiences;
+
+  // If there is no data, don't render the section at all
+  if (!experiences || experiences.length === 0) {
+    return null; 
+  }
 
   return (
     <section id="experience" className="py-32 px-6 relative overflow-hidden">
@@ -183,7 +150,7 @@ export default function ExperienceSection({ experiences }: ExperienceSectionProp
 
           {/* Experience items */}
           <div className="space-y-12 md:space-y-24">
-            {displayExperiences.map((experience, index) => (
+            {experiences.map((experience, index) => (
               <TimelineItem
                 key={`${experience.company}-${index}`}
                 experience={experience}

@@ -45,79 +45,6 @@ interface ProjectsSectionProps {
   projects?: Project[];
 }
 
-const defaultProjects: Project[] = [
-  {
-    title: 'KasiClinix',
-    description:
-      'Comprehensive clinic management system designed for healthcare facilities with patient management, appointment scheduling, and billing integration.',
-    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80',
-    tags: ['Next.js', 'TypeScript', 'Appwrite'],
-    github: 'https://github.com/TheAffiliate/KasiClinix',
-    live: 'https://kasi-clinix.vercel.app/',
-    featured: true,
-  },
-  {
-    title: 'Dloziville',
-    description:
-      'Community platform connecting residents with local services, featuring business directory, event management, and service request system.',
-    image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&q=80',
-    tags: ['HTML5', 'CSS', 'Appwrite', 'Bootstrap'],
-    github: 'https://github.com/TheAffiliate/Dloziville_',
-    live: 'https://www.dloziville.org/',
-    featured: true,
-  },
-  {
-    title: 'Moses Silinda Inc',
-    description:
-      'Professional law firm website showcasing company portfolio, service offerings, and client inquiry system with case gallery.',
-    image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&q=80',
-    tags: ['HTML', 'CSS', 'JavaScript'],
-    github: 'https://github.com/TheAffiliate/Law-Firm-Website',
-    live: 'https://theaffiliate.github.io/Moses_Silinda_Inc/index.html',
-    featured: false,
-  },
-  {
-    title: 'EcoPulse',
-    description:
-      'Financial monitoring dashboard tracking sustainability metrics with real-time environmental data visualization and investor footprint tracking.',
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
-    tags: ['Java', 'Android SDK', 'XML', 'Appwrite'],
-    github: 'https://github.com/TheAffiliate/EcoPulse',
-    live: null,
-    featured: false,
-  },
-  {
-    title: 'GiftOfTheGivers',
-    description:
-      'Donation and aid distribution platform for humanitarian organizations with volunteer management and real-time tracking dashboard.',
-    image: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=800&q=80',
-    tags: ['C#', 'MySQL', 'JavaScript', 'CSS'],
-    github: 'https://github.com/TheAffiliate/GiftOfTheGivers',
-    live: null,
-    featured: false,
-  },
-  {
-    title: 'MedixHub Android',
-    description:
-      'Android application for medical service discovery with doctor search, appointment booking, and prescription management features.',
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=80',
-    tags: ['Java', 'Android SDK', 'XML', 'Firebase'],
-    github: 'https://github.com/TheAffiliate/MedixHub-Android',
-    live: null,
-    featured: false,
-  },
-  {
-    title: 'Claims Submission App',
-    description:
-      'Insurance claims submission and tracking application with photo upload, real-time status updates, and multi-provider integration.',
-    image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80',
-    tags: ['C#', 'MVC', 'MySQL', 'Bootstrap'],
-    github: 'https://github.com/TheAffiliate/Claims-Submission-Web-App',
-    live: null,
-    featured: false,
-  },
-];
-
 function ProjectCard({ project, index, isInView }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -134,7 +61,7 @@ function ProjectCard({ project, index, isInView }: ProjectCardProps) {
         {/* Image Container */}
         <div className={`relative overflow-hidden ${project.featured ? 'aspect-2/1' : 'aspect-4/3'}`}>
           <motion.img
-            src={project.image}
+            src={project.image || 'https://via.placeholder.com/800x600?text=No+Image'}
             alt={project.title}
             className="w-full h-full object-cover"
             animate={{ scale: isHovered ? 1.1 : 1 }}
@@ -189,15 +116,17 @@ function ProjectCard({ project, index, isInView }: ProjectCardProps) {
               animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 20 }}
               transition={{ duration: 0.3 }}
             >
-              <a
-                href={project.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors text-sm font-medium"
-              >
-                <GithubIcon className="w-4 h-4" />
-                View Code
-              </a>
+              {project.github && (
+                <a
+                  href={project.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors text-sm font-medium"
+                >
+                  <GithubIcon className="w-4 h-4" />
+                  View Code
+                </a>
+              )}
               {project.live && (
                 <a
                   href={project.live}
@@ -217,14 +146,17 @@ function ProjectCard({ project, index, isInView }: ProjectCardProps) {
   );
 }
 
-export default function ProjectsSection({ projects }: ProjectsSectionProps) {
+export default function ProjectsSection({ projects = [] }: ProjectsSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [showAll, setShowAll] = useState(false);
-  
-  // Use Supabase data if it exists and has items, otherwise use fallback data
-  const displayProjects = projects && projects.length > 0 ? projects : defaultProjects;
-  const visibleProjects = showAll ? displayProjects : displayProjects.slice(0, 4);
+
+  // Hide section if no projects in database
+  if (!projects || projects.length === 0) {
+    return null;
+  }
+
+  const visibleProjects = showAll ? projects : projects.slice(0, 4);
 
   return (
     <section id="projects" className="py-32 px-6 relative">
@@ -274,7 +206,7 @@ export default function ProjectsSection({ projects }: ProjectsSectionProps) {
         </div>
 
         {/* Show more button */}
-        {!showAll && displayProjects.length > 4 && (
+        {!showAll && projects.length > 4 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
