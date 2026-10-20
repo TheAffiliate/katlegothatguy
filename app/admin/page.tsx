@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, Reorder } from 'framer-motion';
 import {
   FileText,
   Settings,
@@ -15,6 +15,7 @@ import {
   CheckCircle,
   Upload,
   Mail,
+  GripVertical,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
@@ -334,6 +335,7 @@ export default function AdminPage() {
       projects: [
         ...prev.projects,
         {
+           id: crypto.randomUUID(),
           title: '',
           description: '',
           image: '',
@@ -697,11 +699,29 @@ export default function AdminPage() {
             </button>
           </div>
 
-          <div className="space-y-6">
+          {/* Wrap the list in Reorder.Group */}
+          <Reorder.Group 
+            axis="y" 
+            values={settings.projects} 
+            onReorder={(newOrder) => setSettings(prev => ({ ...prev, projects: newOrder }))}
+            className="space-y-6"
+          >
             {settings.projects.map((project, index) => (
-              <div key={index} className="p-6 rounded-2xl bg-gray-800/30 border border-gray-700 space-y-4">
+              /* Turn each item into a Reorder.Item */
+              <Reorder.Item 
+                key={project.id} 
+                value={project}
+                className="p-6 rounded-2xl bg-gray-800/30 border border-gray-700 space-y-4 relative"
+              >
                 <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-semibold text-white">Project #{index + 1}</h3>
+                  {/* Add the drag handle here */}
+                  <div className="flex items-center gap-2">
+                    <div className="cursor-grab active:cursor-grabbing p-1 text-gray-500 hover:text-white transition-colors">
+                      <GripVertical className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white">Project #{index + 1}</h3>
+                  </div>
+                  
                   <button
                     onClick={() => removeProject(index)}
                     className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors cursor-pointer"
@@ -787,7 +807,7 @@ export default function AdminPage() {
                   />
                   <input
                     placeholder="Live Demo URL"
-                    value={project.live}
+                    value={project.live || ''}
                     onChange={(e) => updateProject(index, 'live', e.target.value)}
                     className="bg-gray-800/50 border border-gray-700 text-white h-10 rounded-xl px-4 text-sm"
                   />
@@ -795,14 +815,14 @@ export default function AdminPage() {
 
                 <div className="flex items-center gap-3">
                   <CustomSwitch
-                    checked={project.featured}
+                    checked={project.featured || false}
                     onCheckedChange={(checked) => updateProject(index, 'featured', checked)}
                   />
                   <span className="text-sm text-gray-400">Featured Project</span>
                 </div>
-              </div>
+              </Reorder.Item>
             ))}
-          </div>
+          </Reorder.Group>
         </motion.div>
 
         {/* Skills */}
