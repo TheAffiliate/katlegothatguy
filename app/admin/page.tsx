@@ -215,17 +215,22 @@ export default function AdminPage() {
     setSaveSuccess(false);
 
     try {
-      await supabase.from('portfolio_settings').upsert({
+      // 1. Save Settings
+      const { error: settingsError } = await supabase.from('portfolio_settings').upsert({
         id: 1,
         resume_url: settings.resume_url,
         admin_password: settings.admin_password,
         job_available: settings.job_available,
         updated_at: new Date().toISOString(),
       });
+      if (settingsError) throw new Error(`Settings: ${settingsError.message}`);
 
       localStorage.setItem('admin_password', settings.admin_password);
 
-      await supabase.from('experiences').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      // 2. Save Experiences
+      const { error: deleteExpError } = await supabase.from('experiences').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (deleteExpError) throw new Error(`Delete Exp: ${deleteExpError.message}`);
+
       if (settings.experience.length > 0) {
         const formattedExp = settings.experience.map((exp, idx) => ({
           title: exp.title,
@@ -238,10 +243,14 @@ export default function AdminPage() {
           technologies: exp.technologies,
           sort_order: idx,
         }));
-        await supabase.from('experiences').insert(formattedExp);
+        const { error: insertExpError } = await supabase.from('experiences').insert(formattedExp);
+        if (insertExpError) throw new Error(`Insert Exp: ${insertExpError.message}`);
       }
 
-      await supabase.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      // 3. Save Projects
+      const { error: deleteProjError } = await supabase.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (deleteProjError) throw new Error(`Delete Proj: ${deleteProjError.message}`);
+
       if (settings.projects.length > 0) {
         const formattedProj = settings.projects.map((proj, idx) => ({
           title: proj.title,
@@ -253,23 +262,33 @@ export default function AdminPage() {
           featured: proj.featured,
           sort_order: idx,
         }));
-        await supabase.from('projects').insert(formattedProj);
+        const { error: insertProjError } = await supabase.from('projects').insert(formattedProj);
+        if (insertProjError) throw new Error(`Insert Proj: ${insertProjError.message}`);
       }
 
-      await supabase.from('skills').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      // 4. Save Skills
+      const { error: deleteSkillError } = await supabase.from('skills').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (deleteSkillError) throw new Error(`Delete Skill: ${deleteSkillError.message}`);
+
       if (settings.skills.length > 0) {
         const formattedSkills = settings.skills.map((skill, idx) => ({
           category: skill.category,
           items: skill.items,
           sort_order: idx,
         }));
-        await supabase.from('skills').insert(formattedSkills);
+        const { error: insertSkillError } = await supabase.from('skills').insert(formattedSkills);
+        if (insertSkillError) throw new Error(`Insert Skill: ${insertSkillError.message}`);
       }
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (error) {
+        } catch (error: unknown) {
       console.error('Error saving settings to Supabase:', error);
+      
+      // Safely extract the error message
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      
+      alert(`Failed to save: ${errorMessage}`);
     } finally {
       setIsSaving(false);
     }

@@ -75,9 +75,10 @@ export default function Home() {
           supabase.from('portfolio_settings').select('*').eq('id', 1).single(),
         ]);
 
-        if (expData && expData.length > 0) setExperiences(expData);
-        if (projData && projData.length > 0) setProjects(projData);
-        if (skillData && skillData.length > 0) setSkills(skillData);
+        // Removed .length > 0 checks so empty arrays update the state properly
+        if (expData) setExperiences(expData);
+        if (projData) setProjects(projData);
+        if (skillData) setSkills(skillData);
         if (settsData) setSettings(settsData);
       } catch (error) {
         console.error('Error fetching live data from Supabase:', error);
