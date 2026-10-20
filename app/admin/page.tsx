@@ -361,14 +361,29 @@ export default function AdminPage() {
     }));
   };
 
-  const handleImageUpload = (index: number, file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (e.target?.result) {
-        updateProject(index, 'image', e.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
+  const handleImageUpload = async (index: number, file: File) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `project-${Date.now()}.${fileExt}`;
+
+      // 1. Upload to Supabase Storage (Create a public bucket named 'project-images')
+      const { error: uploadError } = await supabase.storage
+        .from('project-images')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      // 2. Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('project-images')
+        .getPublicUrl(fileName);
+
+      // 3. Save the short URL to the database state, NOT the base64 string
+      updateProject(index, 'image', publicUrl);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image. Did you create the "project-images" bucket in Supabase?');
+    }
   };
 
   const addSkill = () => {

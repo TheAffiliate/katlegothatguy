@@ -95,11 +95,6 @@ export default function SkillsSection({ skills = [] }: SkillsSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
-  // Hide section if no skills in database
-  if (!skills || skills.length === 0) {
-    return null;
-  }
-
   // Map database properties to the UI format (assigning visual colors/icons)
   const icons = [Code2, Terminal, Database, Cloud, Layers];
   const colors = ['#00F5D4', '#00D9B5', '#00BFA5', '#00A896', '#02C39A'];
@@ -110,7 +105,6 @@ export default function SkillsSection({ skills = [] }: SkillsSectionProps) {
     color: colors[index % colors.length],
     skills: dbCat.items.map((item) => ({
       name: item,
-      // Generates a deterministic percentage between 80 and 95 based on string length
       level: 80 + (item.length % 16),
     })),
   }));
@@ -139,47 +133,55 @@ export default function SkillsSection({ skills = [] }: SkillsSectionProps) {
         </motion.div>
 
         {/* Skills grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-16">
-          {displayCategories.map((category, index) => (
-            <SkillCard
-              key={category.title}
-              category={category}
-              index={index}
-              isInView={isInView}
-            />
-          ))}
-        </div>
-
-        {/* Tools & Technologies */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="relative"
-        >
-          <div className="absolute inset-0 bg-linear-to-r from-[#00F5D4]/5 via-transparent to-[#00F5D4]/5 rounded-3xl" />
-          <div className="relative p-8 md:p-12 rounded-3xl border border-gray-800 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-8">
-              <Layers className="w-6 h-6 text-[#00F5D4]" />
-              <h3 className="text-xl font-bold text-white">Technologies & Frameworks</h3>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              {tools.map((tool, index) => (
-                <motion.span
-                  key={`${tool}-${index}`}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                  transition={{ duration: 0.4, delay: 0.8 + (index % 10) * 0.05 }}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  className="px-5 py-2.5 rounded-full bg-gray-900/80 text-gray-300 border border-gray-700 hover:border-[#00F5D4]/50 hover:text-[#00F5D4] hover:bg-[#00F5D4]/5 transition-all duration-300 cursor-default text-sm font-medium"
-                >
-                  {tool}
-                </motion.span>
-              ))}
-            </div>
+        {skills.length === 0 ? (
+          <div className="text-center text-gray-500 py-12">
+            No skills added yet.
           </div>
-        </motion.div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-6 mb-16">
+            {displayCategories.map((category, index) => (
+              <SkillCard
+                key={category.title}
+                category={category}
+                index={index}
+                isInView={isInView}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Tools & Technologies - Only show if there are tools */}
+        {tools.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="relative"
+          >
+            <div className="absolute inset-0 bg-linear-to-r from-[#00F5D4]/5 via-transparent to-[#00F5D4]/5 rounded-3xl" />
+            <div className="relative p-8 md:p-12 rounded-3xl border border-gray-800 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-8">
+                <Layers className="w-6 h-6 text-[#00F5D4]" />
+                <h3 className="text-xl font-bold text-white">Technologies & Frameworks</h3>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {tools.map((tool, index) => (
+                  <motion.span
+                    key={`${tool}-${index}`}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                    transition={{ duration: 0.4, delay: 0.8 + (index % 10) * 0.05 }}
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    className="px-5 py-2.5 rounded-full bg-gray-900/80 text-gray-300 border border-gray-700 hover:border-[#00F5D4]/50 hover:text-[#00F5D4] hover:bg-[#00F5D4]/5 transition-all duration-300 cursor-default text-sm font-medium"
+                  >
+                    {tool}
+                  </motion.span>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   );

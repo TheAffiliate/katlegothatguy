@@ -117,11 +117,6 @@ export default function ExperienceSection({ experiences = [] }: ExperienceSectio
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
 
-  // If there is no data, don't render the section at all
-  if (!experiences || experiences.length === 0) {
-    return null; 
-  }
-
   return (
     <section id="experience" className="py-32 px-6 relative overflow-hidden">
       <div className="max-w-6xl mx-auto" ref={ref}>
@@ -150,14 +145,20 @@ export default function ExperienceSection({ experiences = [] }: ExperienceSectio
 
           {/* Experience items */}
           <div className="space-y-12 md:space-y-24">
-            {experiences.map((experience, index) => (
-              <TimelineItem
-                key={`${experience.company}-${index}`}
-                experience={experience}
-                index={index}
-                isInView={isInView}
-              />
-            ))}
+            {experiences.length === 0 ? (
+              <div className="text-center text-gray-500 py-12">
+                No work experience added yet.
+              </div>
+            ) : (
+              experiences.map((experience, index) => (
+                <TimelineItem
+                  key={`${experience.company}-${index}`}
+                  experience={experience}
+                  index={index}
+                  isInView={isInView}
+                />
+              ))
+            )}
           </div>
         </div>
       </div>

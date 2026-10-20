@@ -151,11 +151,6 @@ export default function ProjectsSection({ projects = [] }: ProjectsSectionProps)
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [showAll, setShowAll] = useState(false);
 
-  // Hide section if no projects in database
-  if (!projects || projects.length === 0) {
-    return null;
-  }
-
   const visibleProjects = showAll ? projects : projects.slice(0, 4);
 
   return (
@@ -179,7 +174,6 @@ export default function ProjectsSection({ projects = [] }: ProjectsSectionProps)
               A collection of projects solving real-world problems — from healthcare to community platforms
             </p>
           </div>
-
           <a
             href="https://github.com/TheAffiliate"
             target="_blank"
@@ -192,18 +186,24 @@ export default function ProjectsSection({ projects = [] }: ProjectsSectionProps)
         </motion.div>
 
         {/* Projects grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <AnimatePresence mode="popLayout">
-            {visibleProjects.map((project, index) => (
-              <ProjectCard
-                key={`${project.title}-${index}`}
-                project={project}
-                index={index}
-                isInView={isInView}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
+        {projects.length === 0 ? (
+          <div className="text-center text-gray-500 py-12">
+            No projects added yet.
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-6">
+            <AnimatePresence mode="popLayout">
+              {visibleProjects.map((project, index) => (
+                <ProjectCard
+                  key={`${project.title}-${index}`}
+                  project={project}
+                  index={index}
+                  isInView={isInView}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Show more button */}
         {!showAll && projects.length > 4 && (
