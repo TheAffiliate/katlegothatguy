@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
-import { ExternalLink, ArrowUpRight } from 'lucide-react';
+import { motion, useInView } from 'framer-motion';
+import { ExternalLink, ArrowUpRight, Play, KeyRound, ShieldAlert } from 'lucide-react';
 
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -33,116 +33,160 @@ export interface Project {
   github: string;
   live: string | null;
   featured?: boolean;
+  video_url?: string | null;
+  demo_login?: string | null;
+  health_demo?: boolean | null;
 }
 
 interface ProjectCardProps {
   project: Project;
   index: number;
   isInView: boolean;
+  hidden: boolean;
 }
 
 interface ProjectsSectionProps {
   projects?: Project[];
 }
 
-function ProjectCard({ project, index, isInView }: ProjectCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
+const INITIAL_VISIBLE = 6;
+const ACCENTS = ['#00F5D4', '#7C9CFF', '#FFB86B', '#FF7AB6', '#A3E635'];
+
+function ProjectCard({ project, index, isInView, hidden }: ProjectCardProps) {
+  const accent = ACCENTS[index % ACCENTS.length];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
+    <motion.li
+      initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      className={`group relative ${project.featured ? 'md:col-span-2' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      transition={{ duration: 0.5, delay: Math.min(index, 5) * 0.08 }}
+      className={`${project.featured ? 'md:col-span-2' : ''} ${hidden ? 'hidden' : ''}`}
     >
-      <div className="relative h-full rounded-3xl overflow-hidden bg-gray-900/60 border border-gray-800 hover:border-[#00F5D4]/30 transition-all duration-500">
-        {/* Image Container */}
-        <div className={`relative overflow-hidden ${project.featured ? 'aspect-2/1' : 'aspect-4/3'}`}>
-          <motion.img
-            src={project.image || 'https://via.placeholder.com/800x600?text=No+Image'}
-            alt={project.title}
-            className="w-full h-full object-cover"
-            animate={{ scale: isHovered ? 1.1 : 1 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-          />
+      <article
+        className="group h-full flex flex-col rounded-3xl overflow-hidden bg-gray-900/60 border border-gray-800 transition-colors duration-300 hover:border-(--accent)"
+        style={{ '--accent': accent } as React.CSSProperties}
+      >
+        {/* Image */}
+        <div
+          className={`relative overflow-hidden bg-gray-900 ${
+            project.featured ? 'aspect-video md:aspect-21/9' : 'aspect-video'
+          }`}
+        >
+          {project.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={project.image}
+              alt={`${project.title} screenshot`}
+              loading="lazy"
+              className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center text-6xl font-bold"
+              style={{
+                background: `linear-gradient(135deg, ${accent}33, #0b0b12)`,
+                color: accent,
+              }}
+              aria-hidden="true"
+            >
+              {project.title.charAt(0)}
+            </div>
+          )}
 
-          {/* Overlay */}
-          <motion.div
-            className="absolute inset-0 bg-linear-to-t from-gray-900 via-gray-900/50 to-transparent"
-            animate={{ opacity: isHovered ? 0.95 : 0.7 }}
-            transition={{ duration: 0.3 }}
-          />
-
-          {/* Featured badge */}
           {project.featured && (
-            <div className="absolute top-4 left-4 z-10">
-              <span className="px-3 py-1 rounded-full bg-[#00F5D4] text-black text-xs font-bold shadow-md">
-                Featured
+            <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-[#00F5D4] text-black text-xs font-bold shadow-md">
+              Featured
+            </span>
+          )}
+        </div>
+
+        {/* Body */}
+        <div className="flex flex-col flex-1 p-6 md:p-8">
+          <h3 className="text-xl md:text-2xl font-bold text-white mb-2 transition-colors group-hover:text-(--accent)">
+            {project.title}
+          </h3>
+
+          <p className="text-gray-400 text-sm md:text-base leading-relaxed mb-4">
+            {project.description}
+          </p>
+
+          {project.health_demo && (
+            <div className="flex items-start gap-2 text-xs text-amber-300/90 bg-amber-300/10 border border-amber-300/20 rounded-xl px-3 py-2 mb-4">
+              <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>
+                Demo only. All data is fictional, so please don&apos;t enter real personal or
+                health information.
               </span>
             </div>
           )}
 
-          {/* Content overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 z-10">
-            <h3 className="text-xl md:text-2xl font-bold text-white mb-2 group-hover:text-[#00F5D4] transition-colors">
-              {project.title}
-            </h3>
+          {project.demo_login && (
+            <div className="flex items-start gap-2 text-xs text-gray-300 bg-gray-800/60 border border-gray-700 rounded-xl px-3 py-2 mb-4">
+              <KeyRound className="w-4 h-4 shrink-0 mt-0.5" style={{ color: accent }} />
+              <span>
+                <span className="text-gray-500">Demo login: </span>
+                <code className="font-mono">{project.demo_login}</code>
+              </span>
+            </div>
+          )}
 
-            <motion.p
-              className="text-gray-400 text-sm md:text-base mb-4 line-clamp-2"
-              animate={{ opacity: isHovered ? 1 : 0.7 }}
-            >
-              {project.description}
-            </motion.p>
-
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-4">
-              {project.tags?.map((tag) => (
-                <span
+          {project.tags && project.tags.length > 0 && (
+            <ul className="flex flex-wrap gap-2 mb-6">
+              {project.tags.map((tag) => (
+                <li
                   key={tag}
-                  className="px-3 py-1 rounded-full text-xs bg-gray-800/80 text-gray-300 border border-gray-700"
+                  className="px-3 py-1 rounded-full text-xs text-gray-300 border"
+                  style={{ borderColor: `${accent}40`, backgroundColor: `${accent}10` }}
                 >
                   {tag}
-                </span>
+                </li>
               ))}
-            </div>
+            </ul>
+          )}
 
-            {/* Action buttons */}
-            <motion.div
-              className="flex items-center gap-3"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {project.github && (
-                <a
-                  href={project.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-colors text-sm font-medium"
-                >
-                  <GithubIcon className="w-4 h-4" />
-                  View Code
-                </a>
-              )}
-              {project.live && (
-                <a
-                  href={project.live}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#00F5D4] text-black hover:bg-[#00D9B5] transition-colors text-sm font-medium"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Live Demo
-                </a>
-              )}
-            </motion.div>
+          {/* Links: always visible */}
+          <div className="mt-auto flex flex-wrap items-center gap-3">
+            {project.live && (
+              <a
+                href={project.live}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${project.title} live site (opens in a new tab)`}
+                className="flex items-center gap-2 px-4 py-2 rounded-full text-black text-sm font-semibold hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: accent }}
+              >
+                <ExternalLink className="w-4 h-4" />
+                Live site
+              </a>
+            )}
+            {project.video_url && (
+              <a
+                href={project.video_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`Watch a demo of ${project.title} (opens in a new tab)`}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-700 text-white hover:bg-white/10 transition-colors text-sm font-medium"
+              >
+                <Play className="w-4 h-4" />
+                Watch demo
+              </a>
+            )}
+            {project.github && (
+              <a
+                href={project.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${project.title} source code on GitHub (opens in a new tab)`}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-800 text-gray-300 hover:text-white hover:bg-white/10 transition-colors text-sm font-medium"
+              >
+                <GithubIcon className="w-4 h-4" />
+                Code
+              </a>
+            )}
           </div>
         </div>
-      </div>
-    </motion.div>
+      </article>
+    </motion.li>
   );
 }
 
@@ -151,12 +195,9 @@ export default function ProjectsSection({ projects = [] }: ProjectsSectionProps)
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const [showAll, setShowAll] = useState(false);
 
-  const visibleProjects = showAll ? projects : projects.slice(0, 4);
-
   return (
     <section id="projects" className="py-32 px-6 relative">
       <div className="max-w-6xl mx-auto" ref={ref}>
-        {/* Section header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -168,10 +209,10 @@ export default function ProjectsSection({ projects = [] }: ProjectsSectionProps)
               Portfolio
             </span>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-              Featured Projects
+              Projects
             </h2>
             <p className="text-gray-500 text-lg max-w-xl">
-              A collection of projects solving real-world problems — from healthcare to community platforms
+              Open the live site, watch a short demo or read the code.
             </p>
           </div>
           <a
@@ -185,41 +226,31 @@ export default function ProjectsSection({ projects = [] }: ProjectsSectionProps)
           </a>
         </motion.div>
 
-        {/* Projects grid */}
         {projects.length === 0 ? (
-          <div className="text-center text-gray-500 py-12">
-            No projects added yet.
-          </div>
+          <div className="text-center text-gray-500 py-12">No projects added yet.</div>
         ) : (
-          <div className="grid md:grid-cols-2 gap-6">
-            <AnimatePresence mode="popLayout">
-              {visibleProjects.map((project, index) => (
-                <ProjectCard
-                  key={`${project.title}-${index}`}
-                  project={project}
-                  index={index}
-                  isInView={isInView}
-                />
-              ))}
-            </AnimatePresence>
-          </div>
+          <ul className="grid md:grid-cols-2 gap-6">
+            {projects.map((project, index) => (
+              <ProjectCard
+                key={project.id ?? `${project.title}-${index}`}
+                project={project}
+                index={index}
+                isInView={isInView}
+                hidden={!showAll && index >= INITIAL_VISIBLE}
+              />
+            ))}
+          </ul>
         )}
 
-        {/* Show more button */}
-        {!showAll && projects.length > 4 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="flex justify-center mt-12"
-          >
+        {!showAll && projects.length > INITIAL_VISIBLE && (
+          <div className="flex justify-center mt-12">
             <button
               onClick={() => setShowAll(true)}
               className="border border-gray-700 hover:border-[#00F5D4] text-white hover:text-[#00F5D4] px-8 py-4 rounded-full transition-all duration-300 bg-transparent hover:bg-[#00F5D4]/5 font-medium cursor-pointer"
             >
-              Show More Projects
+              Show more projects
             </button>
-          </motion.div>
+          </div>
         )}
       </div>
     </section>

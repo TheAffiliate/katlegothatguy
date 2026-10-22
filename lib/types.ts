@@ -19,6 +19,9 @@ export interface Project {
   github: string;
   live: string;
   featured: boolean;
+  video_url?: string | null;
+  demo_login?: string | null;
+  health_demo?: boolean | null;
 }
 
 export interface SkillCategory {
