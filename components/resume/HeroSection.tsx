@@ -46,62 +46,85 @@ function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
 
 interface HeroSectionProps {
   scrollToSection: (sectionId: string) => void;
+  resumeUrl?: string;
 }
 
-export default function HeroSection({ scrollToSection }: HeroSectionProps) {
+const STACK = ['Next.js', 'TypeScript', 'Appwrite', 'Java', 'C#', 'SQL'];
+
+export default function HeroSection({ scrollToSection, resumeUrl }: HeroSectionProps) {
   return (
-    <section id="hero" className="min-h-screen relative flex items-center justify-center px-6 pt-20 pb-16 bg-black text-white">
-      <div className="max-w-5xl mx-auto text-center z-10">
-        
-        {/* Availability Badge */}
+    <section
+      id="hero"
+      className="min-h-screen relative flex items-center justify-center px-6 pt-24 pb-20 bg-black text-white"
+    >
+      <div className="max-w-4xl mx-auto text-center z-10">
+        {/* Availability badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#00F5D4]/30 bg-[#00F5D4]/10 mb-8">
           <span className="h-2 w-2 rounded-full bg-[#00F5D4]" />
           <span className="text-xs md:text-sm font-medium text-[#00F5D4]">
-            Available for opportunities
+            Open to junior roles and internships · Johannesburg
           </span>
         </div>
 
-        {/* Main Headline */}
-        <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-none mb-6">
-          Hi, I&apos;m{' '}
-          <span className="relative inline-block text-[#00F5D4]">
-            Katlego
-            <span className="absolute left-0 -bottom-3 sm:-bottom-4 md:-bottom-5 w-full h-1 md:h-1.25 bg-[#00F5D4] rounded-full" />
-          </span>
+        {/* Name label (span, so the intro paragraph below is the first <p> on the page) */}
+        <span className="block text-sm md:text-base font-semibold tracking-widest uppercase text-gray-400 mb-4">
+          Katlego Sebona · Junior Full-Stack Developer
+        </span>
+
+        {/* Headline */}
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-8">
+          I build <span className="text-[#00F5D4]">web and Android apps</span> for healthcare and
+          community organisations.
         </h1>
 
-        {/* Sub-headline */}
-        <p className="text-xl sm:text-2xl md:text-3xl mb-8">
-          <span className="font-bold text-white">Software Developer</span>{' '}
-          <span className="text-[#00F5D4] mx-2">•</span>{' '}
-          <span className="font-light text-gray-300">Building impactful digital solutions</span>
-        </p>
-
-        {/* Main Body Paragraph */}
-        <p className="text-gray-400 text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed mb-10 font-normal">
+        {/* Answer capsule */}
+        <p className="text-gray-400 text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed mb-8 font-normal">
           I&apos;m Katlego Sebona, a junior full-stack developer in Johannesburg. I build web
           and Android apps for healthcare and community organisations with Next.js,
           TypeScript, Appwrite and Java, and I&apos;m open to junior roles and internships.
         </p>
 
-        {/* Action Buttons */}
-        <div className="flex items-center justify-center gap-4 mb-12">
+        {/* Stack */}
+        <ul className="flex flex-wrap items-center justify-center gap-2 mb-10">
+          {STACK.map((tech) => (
+            <li
+              key={tech}
+              className="px-3 py-1 rounded-full text-xs sm:text-sm text-gray-300 bg-gray-900/70 border border-gray-800"
+            >
+              {tech}
+            </li>
+          ))}
+        </ul>
+
+        {/* Actions */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
           <button
             onClick={() => scrollToSection('projects')}
             className="px-8 py-3.5 rounded-full bg-[#00F5D4] text-black font-semibold hover:bg-[#00D9B5] transition-colors cursor-pointer text-base"
           >
-            View My Work
+            See live projects
           </button>
 
-          <button
-            onClick={() => scrollToSection('contact')}
-            className="px-8 py-3.5 rounded-full border border-gray-800 bg-gray-900/50 hover:bg-gray-800 text-white font-medium transition-colors cursor-pointer text-base"
-          >
-            Get In Touch
-          </button>
+          {resumeUrl ? (
+            <a
+              href={resumeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-8 py-3.5 rounded-full border border-gray-700 bg-gray-900/50 hover:bg-gray-800 text-white font-medium transition-colors text-base"
+            >
+              Download CV
+            </a>
+          ) : (
+            <button
+              onClick={() => scrollToSection('contact')}
+              className="px-8 py-3.5 rounded-full border border-gray-700 bg-gray-900/50 hover:bg-gray-800 text-white font-medium transition-colors cursor-pointer text-base"
+            >
+              Get in touch
+            </button>
+          )}
         </div>
 
-        {/* Social Icons */}
+        {/* Social icons */}
         <div className="flex items-center justify-center gap-4 text-gray-400">
           <a
             href="https://github.com/TheAffiliate"
@@ -124,17 +147,18 @@ export default function HeroSection({ scrollToSection }: HeroSectionProps) {
           <button
             onClick={() => scrollToSection('contact')}
             className="p-3.5 rounded-full bg-gray-900/80 border border-gray-800 hover:border-[#00F5D4]/40 hover:text-white transition-colors cursor-pointer"
-            aria-label="Email"
+            aria-label="Contact me by email"
           >
             <Mail className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Scroll Indicator */}
+      {/* Scroll indicator */}
       <button
-        onClick={() => scrollToSection('about')}
+        onClick={() => scrollToSection('projects')}
         className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-xs tracking-widest text-gray-500 hover:text-white transition-colors cursor-pointer"
+        aria-label="Scroll to projects"
       >
         <span>SCROLL</span>
         <ArrowDown className="w-4 h-4" />

@@ -58,7 +58,7 @@ export default function PortfolioPage({ experiences, projects, skills, settings 
       <FloatingNav activeSection={activeSection} scrollToSection={scrollToSection} />
 
       <main>
-        <HeroSection scrollToSection={scrollToSection} />
+        <HeroSection scrollToSection={scrollToSection} resumeUrl={settings?.resume_url} />
         <ProjectsSection projects={projects} />
         <SkillsSection skills={skills} />
         <AboutSection jobAvailable={settings?.job_available} resumeUrl={settings?.resume_url} />
