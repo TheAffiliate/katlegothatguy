@@ -1,129 +1,56 @@
-'use client';
-
-import React, { useState, useEffect, useCallback } from 'react';
-import AnimatedBackground from '@/components/resume/AnimatedBackground';
-import FloatingNav from '@/components/resume/FloatingNav';
-import HeroSection from '@/components/resume/HeroSection';
-import AboutSection from '@/components/resume/AboutSection';
-import ExperienceSection from '@/components/resume/ExperienceSection';
-import SkillsSection from '@/components/resume/SkillsSection';
-import ProjectsSection from '@/components/resume/ProjectsSection';
-import ContactSection from '@/components/resume/ContactSection';
-import Footer from '@/components/resume/Footer';
 import { supabase } from '@/lib/supabaseClient';
+import PortfolioPage from '@/components/resume/PortfolioPage';
+import type { Project } from '@/lib/types';
 
-export interface Experience {
-  id?: string;
-  title: string;
-  company: string;
-  location: string;
-  period: string;
-  current: boolean;
-  description: string;
-  achievements: string[];
-  technologies: string[];
-}
+export type {
+  Experience,
+  Project,
+  SkillCategory,
+  PortfolioSettings,
+} from '@/lib/types';
 
-export interface Project {
-  id?: string;
-  title: string;
-  description: string;
-  image: string;
-  tags: string[];
-  github: string;
-  live: string;
-  featured: boolean;
-}
+export const dynamic = 'force-dynamic';
 
-export interface SkillCategory {
-  id?: string;
-  category: string;
-  items: string[];
-}
+export default async function Home() {
+  const [exp, proj, skill, sett] = await Promise.all([
+    supabase.from('experiences').select('*').order('sort_order', { ascending: true }),
+    supabase.from('projects').select('*').order('sort_order', { ascending: true }),
+    supabase.from('skills').select('*').order('sort_order', { ascending: true }),
+    supabase.from('portfolio_settings').select('*').eq('id', 1).single(),
+  ]);
 
-export interface PortfolioSettings {
-  resume_url: string;
-  job_available: boolean;
-}
-
-export default function Home() {
-  const [activeSection, setActiveSection] = useState<string>('hero');
-  const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [skills, setSkills] = useState<SkillCategory[]>([]);
-  const [settings, setSettings] = useState<PortfolioSettings | null>(null);
-
-  const scrollToSection = useCallback((sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, []);
-
-  useEffect(() => {
-    async function fetchPortfolioData() {
-      try {
-        const [
-          { data: expData },
-          { data: projData },
-          { data: skillData },
-          { data: settsData },
-        ] = await Promise.all([
-          supabase.from('experiences').select('*').order('sort_order', { ascending: true }),
-          supabase.from('projects').select('*').order('sort_order', { ascending: true }),
-          supabase.from('skills').select('*').order('sort_order', { ascending: true }),
-          supabase.from('portfolio_settings').select('*').eq('id', 1).single(),
-        ]);
-
-        // Removed .length > 0 checks so empty arrays update the state properly
-        if (expData) setExperiences(expData);
-        if (projData) setProjects(projData);
-        if (skillData) setSkills(skillData);
-        if (settsData) setSettings(settsData);
-      } catch (error) {
-        console.error('Error fetching live data from Supabase:', error);
-      }
-    }
-
-    fetchPortfolioData();
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = ['hero', 'about', 'experience', 'skills', 'projects', 'contact'];
-      const scrollPosition = window.scrollY + window.innerHeight / 3;
-
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const { offsetTop, offsetHeight } = element;
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveSection(section);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const projectList = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Projects by Katlego Sebona',
+    itemListElement: (proj.data ?? []).map((p: Project, i: number) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'SoftwareSourceCode',
+        name: p.title,
+        description: p.description,
+        url: p.live || undefined,
+        codeRepository: p.github || undefined,
+        programmingLanguage: p.tags,
+      },
+    })),
+  };
 
   return (
-    <div className="min-h-screen bg-[#030306] text-white overflow-x-hidden">
-      <AnimatedBackground />
-      <FloatingNav activeSection={activeSection} scrollToSection={scrollToSection} />
-
-      <main>
-        <HeroSection scrollToSection={scrollToSection} />
-        <AboutSection jobAvailable={settings?.job_available} resumeUrl={settings?.resume_url} />
-        <ExperienceSection experiences={experiences} />
-        <SkillsSection skills={skills} />
-        <ProjectsSection projects={projects} />
-        <ContactSection jobAvailable={settings?.job_available} />
-      </main>
-
-      <Footer scrollToSection={scrollToSection} resumeUrl={settings?.resume_url} />
-    </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(projectList).replace(/</g, '\\u003c'),
+        }}
+      />
+      <PortfolioPage
+        experiences={exp.data ?? []}
+        projects={proj.data ?? []}
+        skills={skill.data ?? []}
+        settings={sett.data ?? null}
+      />
+    </>
   );
 }
