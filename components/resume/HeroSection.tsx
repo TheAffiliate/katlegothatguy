@@ -79,7 +79,9 @@ export default function HeroSection({ scrollToSection }: HeroSectionProps) {
 
         {/* Main Body Paragraph */}
         <p className="text-gray-400 text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed mb-10 font-normal">
-          Dedicated and innovative software developer with hands-on experience designing and implementing web and mobile applications. Passionate about leveraging technology to solve real-world problems.
+          I&apos;m Katlego Sebona, a junior full-stack developer in Johannesburg. I build web
+          and Android apps for healthcare and community organisations with Next.js,
+          TypeScript, Appwrite and Java, and I&apos;m open to junior roles and internships.
         </p>
 
         {/* Action Buttons */}
