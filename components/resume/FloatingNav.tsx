@@ -12,10 +12,10 @@ interface FloatingNavProps {
 
 const navItems = [
   { id: 'hero', label: 'Home' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'skills', label: 'Skills' },
   { id: 'about', label: 'About' },
   { id: 'experience', label: 'Experience' },
-  { id: 'skills', label: 'Skills' },
-  { id: 'projects', label: 'Projects' },
   { id: 'contact', label: 'Contact' },
 ];
 
@@ -28,7 +28,7 @@ export default function FloatingNav({ activeSection, scrollToSection }: Floating
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 100);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -36,6 +36,7 @@ export default function FloatingNav({ activeSection, scrollToSection }: Floating
     <>
       {/* Desktop Nav */}
       <motion.nav
+        aria-label="Main navigation"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, delay: 0.5 }}
@@ -45,9 +46,14 @@ export default function FloatingNav({ activeSection, scrollToSection }: Floating
       >
         <div className="flex items-center gap-1 px-2 py-2 rounded-full bg-gray-900/80 backdrop-blur-xl border border-gray-800">
           {navItems.map((item) => (
-            <button
+            <a
               key={item.id}
-              onClick={() => scrollToSection(item.id)}
+              href={`#${item.id}`}
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection(item.id);
+              }}
+              aria-current={activeSection === item.id ? 'true' : undefined}
               className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors duration-300 cursor-pointer ${
                 activeSection === item.id
                   ? 'text-black'
@@ -62,7 +68,7 @@ export default function FloatingNav({ activeSection, scrollToSection }: Floating
                 />
               )}
               <span className="relative z-10">{item.label}</span>
-            </button>
+            </a>
           ))}
         </div>
       </motion.nav>
@@ -75,6 +81,7 @@ export default function FloatingNav({ activeSection, scrollToSection }: Floating
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-6 right-6 z-50 md:hidden p-3 rounded-full bg-gray-900/80 backdrop-blur-xl border border-gray-800 text-white cursor-pointer"
         aria-label="Toggle Navigation Menu"
+        aria-expanded={isOpen}
       >
         {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </motion.button>
@@ -82,7 +89,8 @@ export default function FloatingNav({ activeSection, scrollToSection }: Floating
       {/* Mobile Nav Menu */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
+          <motion.nav
+            aria-label="Mobile navigation"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -91,26 +99,29 @@ export default function FloatingNav({ activeSection, scrollToSection }: Floating
           >
             <div className="p-4 rounded-2xl bg-gray-900/95 backdrop-blur-xl border border-gray-800 space-y-2">
               {navItems.map((item, index) => (
-                <motion.button
+                <motion.a
                   key={item.id}
+                  href={`#${item.id}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     scrollToSection(item.id);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
+                  aria-current={activeSection === item.id ? 'true' : undefined}
+                  className={`block w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors cursor-pointer ${
                     activeSection === item.id
                       ? 'bg-[#00F5D4] text-black'
                       : 'text-gray-400 hover:text-white hover:bg-gray-800'
                   }`}
                 >
                   {item.label}
-                </motion.button>
+                </motion.a>
               ))}
             </div>
-          </motion.div>
+          </motion.nav>
         )}
       </AnimatePresence>
 
@@ -121,18 +132,16 @@ export default function FloatingNav({ activeSection, scrollToSection }: Floating
         transition={{ delay: 0.3 }}
         onClick={() => setShowAdminDialog(true)}
         className="fixed top-6 left-6 z-50 text-xl font-bold text-white hover:text-[#00F5D4] transition-colors cursor-pointer"
-        title="Admin Access"
+        aria-label="Katlego Sebona"
       >
         <span className="text-[#00F5D4]">K</span>S
       </motion.button>
 
       {/* Admin Modal */}
-      {typeof AdminPasswordDialog !== 'undefined' && (
-        <AdminPasswordDialog 
-          isOpen={showAdminDialog} 
-          onClose={() => setShowAdminDialog(false)} 
-        />
-      )}
+      <AdminPasswordDialog
+        isOpen={showAdminDialog}
+        onClose={() => setShowAdminDialog(false)}
+      />
     </>
   );
 }
